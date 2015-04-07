@@ -332,11 +332,12 @@ gameLoop: ; the main game loop; void () ;{
 	call compareTypedLetterWithTrylist
 	ceq alreadyTypedMessage
 	jeq gameLoop_GetInput
+	call updateTypedList
 	call compareTypedLetterWithWord
-	cz hangTheMan
+	cne hangTheMan
 	call checkGameOver
-	cnz gameOverScreen
-	jz gameloop_GetInput
+	ceq gameOverScreen
+	jmp gameloop_GetInput
 	
 	pop r7
 	pop r6
@@ -413,10 +414,10 @@ compareTypedLetterWithWord: ; compare the typed letter with word; fr = score(1 =
 	push r6
 	push r7
 	
-	loadn r3, #0	; load zero
-	loadn r7, #0	; fail flag
-	loadn r0, #Word ; typed word vector 
-	load r2, WordSize ; typed word size
+	loadn r3, #0	    ; load zero
+	loadn r7, #0	    ; fail flag
+	loadn r0, #Word     ; typed word vector 
+	load r2, WordSize   ; typed word size
 	load r6, Score		; load the score
 	compareTypedLetterWithWord_Loop:
 		dec r2			; setup index
@@ -431,6 +432,7 @@ compareTypedLetterWithWord: ; compare the typed letter with word; fr = score(1 =
 	compareTypedLetterWithWord_Exit:
 	inc r3				; r3 = 1
 	cmp r7, r3			; compare score flag with true
+
 	pop r7
 	pop r6
 	pop r5
@@ -444,37 +446,94 @@ rts
 
 compareTypedLetterWithWord_Scored:
 
-	inc r6 ;inc score
-	loadn r7, #1 ; set score flag true
+	push r0
+	push r1
+	push r3
 
+	loadn r0, #562  ; carregando a posicao na tela
+	loadn r3, #256	; carregando a cor marrom no r3
+	
+	add r0, r0, r2	; somando a posicao na tela com o gap da palavra
+	add r1, r1, r3  ; acrescento a cor marrom na letra
+
+	outchar r1, r0  ; printando na tela a letra na cor r3 na posicao r0
+
+	inc r6 			; inc score
+	loadn r7, #1 	; set score flag true
+
+	pop r3
+	pop r1
+	pop r0
 rts
 
 ;}
 ;------------------------------------------------------
 	
-alreadyTyped: ; print message and update try list; void () {
-push r0
-push r1
-push r2
-push r3
-push r4
-push r5
-push r6
-push r7
-push fr
+alreadyTyped: ; print message; void () {
+	push r0
+	push r1
+	push r2
+				
+	loadn r0, #640					; Posicao da tela que o primeiro caractere da mensagem sera impresso
+	loadn r1, #messageLetterTyped	; endereco onde comeca a mensagem
+	loadn r2, #0					; cor da mensagem = branco (0)
+	call printStr 					; printando a mensagem	
 
-;TODO
-
-pop fr
-pop r7
-pop r6
-pop r5
-pop r4
-pop r3
-pop r2
-pop r1
-pop r0
+	pop r2
+	pop r1
+	pop r0
 
 rts
 ;}
 ;------------------------------------------------------
+
+updateTypedList: ; updates typed list for user on pos 1020; void () {
+	push r0
+	push r1
+	push r2
+	
+	loadn r0, #1020					; Posicao da tela que o primeiro caractere da mensagem sera impresso
+	loadn r1, #TypedLetters 		; endereco onde comeca o vetor com as letras digitadas
+	loadn r2, #0					; cor da mensagem = branco (0)
+	call printStr 					; printando a mensagem	
+
+	pop r2
+	pop r1
+	pop r0
+
+rts
+;}
+;------------------------------------------------------
+
+hangTheMan: ; hang the man =); void() {
+	push r0
+	push r1
+	push r2
+
+	loadn r0, #Hangman
+	loadn r1, #HangmanPos
+	load  r2, WrongGuesses
+
+	add r0, r2, r0    ; posicao parte do corpo a ser printada
+	add r1, r2, r1    ; parte do corpo a ser printada
+
+	loadi r0, r0
+	loadi r1, r1
+
+	outchar r0, r1    ; printa o fdp!
+
+	inc r2
+	store WrongGuesses, r2	
+
+	pop r2
+	pop r1
+	pop r0
+;}
+;------------------------------------------------------
+
+checkGameOver:  ;ve se o jogo acabou
+	pushssssssssssssssssssssss
+
+	poooooooooooooooooopssssss
+
+rts
